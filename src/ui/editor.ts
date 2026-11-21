@@ -187,9 +187,13 @@ export class RungEditor {
     this.openPalette(next.length - 1, [0]);
   }
 
+  /** After an insert, focus the new element's first empty tag box. */
+  private focusEmpty = false;
+
   private insert(ri: number, path: Path, el: El) {
     this.editRung(ri, (r) => insertAt(r, path, el));
     this.sel = { ri, path };
+    this.focusEmpty = true;
     this.render();
     this.showInspector();
   }
@@ -492,11 +496,37 @@ export class RungEditor {
       if (sp.kind === 'choice') {
         input = h('select', { id, disabled }, (sp.choices ?? []).map((c) => h('option', { value: c, selected: c === val }, c)));
       } else {
-        input = h('input', { id, value: val, disabled, inputmode: sp.kind === 'number' ? 'decimal' : 'text', autocomplete: 'off', spellcheck: 'false', list: sp.kind === 'tag' ? id + '-list' : undefined, placeholder: sp.hint ?? '' });
+        // "?" means "not set yet": show an empty box so the whole pick list is offered.
+        const shown = val === '?' ? '' : val;
+        const ph = sp.kind === 'tag' ? 'Pick or type a tag' : sp.hint ?? '';
+        const tagInput = h('input', { id, value: shown, disabled, inputmode: sp.kind === 'number' ? 'decimal' : 'text', autocomplete: 'off', spellcheck: 'false', list: sp.kind === 'tag' ? id + '-list' : undefined, placeholder: ph });
+        if (sp.kind === 'tag') {
+          // A browser only lists choices that match what's already typed, so clear
+          // the box while picking and put the old tag back if nothing is chosen.
+          let before = '';
+          tagInput.addEventListener('focus', () => {
+            before = tagInput.value;
+            if (before) {
+              tagInput.placeholder = before;
+              tagInput.value = '';
+            }
+          });
+          tagInput.addEventListener('blur', () => {
+            if (tagInput.value.trim() === '' && before) tagInput.value = before;
+            tagInput.placeholder = ph;
+          });
+        }
+        if (!shown && sp.kind === 'tag' && this.focusEmpty && !disabled) {
+          this.focusEmpty = false;
+          setTimeout(() => tagInput.focus());
+        }
+        input = tagInput;
       }
       input.addEventListener('change', () => {
+        const v = input.value.trim();
+        if (v === '' || v === val) return;
         const ins = clone(el) as Instr;
-        ins.args[i] = input.value.trim();
+        ins.args[i] = v;
         this.editRung(sel.ri, (r) => replaceAt(r, sel.path, ins));
       });
       const choices = sp.kind === 'tag' ? kit.tagChoices(el, i) : [];
