@@ -87,7 +87,7 @@ export function ladderPane(
     const n = analysis.rungs.length;
     const status =
       phase === null
-        ? 'Between scans. Pause, then press Step scan to read the inputs.'
+        ? 'Between scans. Press Step scan (while paused) to read the inputs.'
         : phase === 'in'
           ? 'Input image read. Next: solve rung 0.'
           : phase === 'out'

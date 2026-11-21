@@ -52,10 +52,13 @@ export function startApp(root: HTMLElement) {
 }
 
 function unlocked(id: string): boolean {
-  // Missions open in order within a chapter; Chapter 2 opens after 1.9.
+  // Missions open in order within a chapter. The first mission of every
+  // chapter is always open, so you can start ladder without finishing relays.
+  if (save.load().settings.unlockAll) return true;
   const i = missions.findIndex((m) => m.id === id);
   if (i <= 0) return true;
   const prev = missions[i - 1];
+  if (prev.chapter !== missions[i].chapter) return true;
   if (save.load().missions[prev.id]?.status === 'done') return true;
   if (save.load().missions[id]) return true;
   return false;
@@ -161,6 +164,20 @@ function saveMenu() {
     { class: 'stack' },
     h('p', {}, 'Progress is kept in this browser. Export it to move to another device or keep a backup.'),
     h('div', { class: 'insp-row' }, h('button', { class: 'btn', onclick: () => save.exportSave() }, 'Export save'), h('label', { class: 'btn', for: 'import-file' }, 'Import save'), file),
+    h(
+      'label',
+      { class: 'insp-row small' },
+      h('input', {
+        type: 'checkbox',
+        checked: !!save.load().settings.unlockAll,
+        onchange: (e: Event) => {
+          save.load().settings.unlockAll = (e.target as HTMLInputElement).checked;
+          save.persist();
+          if (location.hash === '#/' || location.hash === '') location.reload();
+        },
+      }),
+      'Unlock every mission (skip ahead)',
+    ),
     h('button', {
       class: 'btn danger small',
       onclick: () =>
