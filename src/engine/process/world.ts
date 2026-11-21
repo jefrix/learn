@@ -112,7 +112,10 @@ export interface OverloadDef extends Base {
   coolFor?: number;
 }
 export interface OperatorDef extends Base {
-  type: 'button' | 'estop' | 'selector' | 'lamp' | 'horn' | 'switch';
+  type: 'button' | 'estop' | 'selector' | 'lamp' | 'horn' | 'switch' | 'display';
+  unit?: string;
+  /** Selector starting position (default: the first one). */
+  initial?: string;
   signal: string;
   positions?: string[];
   color?: string;
@@ -121,6 +124,7 @@ export interface ScaleDef extends Base {
   /** Filter or membrane whose pressure drop builds while filtering and clears on backwash. */
   type: 'filter';
   signal: string; // psi
+  unit?: string;
   clean: number;
   foulPerMin: number;
   filterWhen: string[];
@@ -187,7 +191,7 @@ export class World {
   init(sig: Signals) {
     for (const p of this.parts.values()) {
       if (p.type === 'button' || p.type === 'estop') sig.set(p.signal, false);
-      if (p.type === 'selector' || p.type === 'switch') sig.set(p.signal, (p.positions ?? ['off', 'on'])[0]);
+      if (p.type === 'selector' || p.type === 'switch') sig.set(p.signal, p.initial ?? (p.positions ?? ['off', 'on'])[0]);
       if (p.type === 'overload') sig.set(p.signal, false);
       if (p.type === 'vfd') sig.set(`${p.id}.fault`, false);
       if (p.type === 'analog') sig.set(p.signal, p.value);

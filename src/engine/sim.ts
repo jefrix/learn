@@ -79,6 +79,10 @@ export class Sim {
   }
 
   private readInput(p: NonNullable<MachineDef['plc']>['inputs'][number]): Val {
+    if (p.device && p.pos) {
+      const relayOpen = this.relay?.faults.some((f) => f.type === 'open' && f.device === p.device) ?? false;
+      return !relayOpen && this.sig.s(p.device) === p.pos;
+    }
     if (p.device) {
       const relayOpen = this.relay?.faults.some((f) => f.type === 'open' && f.device === p.device) ?? false;
       if (relayOpen) return false;
@@ -94,27 +98,47 @@ export class Sim {
     return false;
   }
 
-  tick(dt: number) {
+  private get plcHalted() {
+    return this.plcFaults.some((f) => f.type === 'plcHalt');
+  }
+
+  /** Stage 1: instruments read the plant; the PLC's input terminals see the field. */
+  readInputs() {
     this.world.sense(this.sig);
     const io = this.machine.plc;
-    if (this.plc && io) {
-      const halted = this.plcFaults.some((f) => f.type === 'plcHalt');
-      if (this.powered && !halted) {
-        for (const p of io.inputs) this.plc.writeInput(p.tag, this.readInput(p));
-        this.plc.scan(dt);
-      }
-      const forced = this.plcFaults.some((f) => f.type === 'forceOutputs');
-      for (const p of io.outputs) {
-        if (!p.signal) continue;
-        let v: Val = this.powered && !halted ? this.plc.readOutput(p.tag) : false;
-        if (forced && this.powered) v = true;
-        this.sig.set(p.signal, v);
-      }
-      this.sig.set('PLC.halted', halted);
+    if (this.plc && io && this.powered && !this.plcHalted) {
+      for (const p of io.inputs) this.plc.writeInput(p.tag, this.readInput(p));
     }
+  }
+
+  /** Stage 3: the PLC's output image drives its output terminals. */
+  writeOutputs() {
+    const io = this.machine.plc;
+    if (!this.plc || !io) return;
+    const halted = this.plcHalted;
+    const forced = this.plcFaults.some((f) => f.type === 'forceOutputs');
+    for (const p of io.outputs) {
+      if (!p.signal) continue;
+      let v: Val = this.powered && !halted ? this.plc.readOutput(p.tag) : false;
+      if (forced && this.powered && typeof v === 'boolean') v = true;
+      this.sig.set(p.signal, v);
+    }
+    this.sig.set('PLC.halted', halted);
+    this.sig.set('PLC.ok', this.powered && !halted && !(this.plc as { fault?: string | null }).fault);
+  }
+
+  /** Stage 4: the relay circuit settles and the plant moves. */
+  finishTick(dt: number) {
     if (this.relay) this.relay.step(dt, this.sig, this.powered);
     this.world.act(dt, this.sig);
     this.t += dt;
+  }
+
+  tick(dt: number) {
+    this.readInputs();
+    if (this.plc && this.machine.plc && this.powered && !this.plcHalted) this.plc.scan(dt);
+    this.writeOutputs();
+    this.finishTick(dt);
   }
 
   run(seconds: number, dt: number) {

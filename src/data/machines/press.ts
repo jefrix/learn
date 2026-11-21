@@ -145,7 +145,7 @@ export const pressPlant: PartDef[] = [
 ];
 
 const lamp = (id: string, x: number, label: string, color: string) => ({ id: `l_${id}`, type: 'lamp' as const, at: [x, 395] as [number, number], signal: id, tag: id, label, color });
-const knob = (id: string, x: number, label: string, positions = ['off', 'on']) => ({ id: `k_${id}`, type: 'selector' as const, at: [x, 525] as [number, number], signal: id, tag: id, label, positions });
+const knob = (id: string, x: number, label: string, positions = ['off', 'on'], initial?: string) => ({ id: `k_${id}`, type: 'selector' as const, at: [x, 525] as [number, number], signal: id, tag: id, label, positions, initial });
 
 /** Door and cabinet devices. */
 export const pressDoor: PartDef[] = [
@@ -165,7 +165,7 @@ export const pressDoor: PartDef[] = [
   { id: 'lblRun', type: 'label', at: [30, 450], label: 'Running', cls: 'part-label big' },
   { id: 'lblFault', type: 'label', at: [450, 450], label: 'Faults', cls: 'part-label big' },
   { id: 'SB1', type: 'estop', at: [60, 530], signal: 'SB1', tag: 'SB1', label: 'E-STOP' },
-  knob('SA2', 165, 'Mode', ['manual', 'stop', 'auto']),
+  knob('SA2', 165, 'Mode', ['manual', 'stop', 'auto'], 'stop'),
   knob('SA1', 265, 'Local/Remote', ['local', 'remote']),
   { id: 'SB3', type: 'button', at: [350, 530], signal: 'SB3', tag: 'SB3', label: 'Auto start', color: 'green', lamp: 'KA5' },
   { id: 'SB4', type: 'button', at: [425, 530], signal: 'SB4', tag: 'SB4', label: 'Auto stop', color: 'red' },

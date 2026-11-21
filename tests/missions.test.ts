@@ -102,3 +102,16 @@ describe('mission content', () => {
     expect(brokenWire?.pass).toBe(false);
   });
 });
+
+describe('help cards', () => {
+  it('every [[link]] points at a card that exists, and every card has a Real world section', () => {
+    const broken: string[] = [];
+    const noReal: string[] = [];
+    for (const [path, md] of Object.entries(helpFiles)) {
+      for (const m of md.matchAll(/\[\[([a-z0-9-]+)\]\]/g)) if (!helpIds.has(m[1])) broken.push(`${path}: ${m[1]}`);
+      if (!/^## (Real world|Safety)/m.test(md)) noReal.push(path);
+    }
+    expect(broken).toEqual([]);
+    expect(noReal).toEqual([]);
+  });
+});

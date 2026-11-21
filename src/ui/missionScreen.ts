@@ -26,6 +26,10 @@ export interface LogicPane {
   step?(): void;
   /** Whether stepping is handled by the pane (ladder step-scan view). */
   stepsItself?: boolean;
+  /** Replace the logic text (Start over). */
+  reset?(text: string): void;
+  /** Finish anything half-done in step mode before running freely. */
+  resume?(): void;
 }
 
 const SPEEDS = [1, 10, 60, 600];
@@ -152,6 +156,7 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   }
   function togglePause() {
     paused = !paused;
+    if (!paused) pane.resume?.();
     pauseBtn.textContent = paused ? 'Run' : 'Pause';
   }
   function stepOnce() {
@@ -345,8 +350,8 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
           playerText = mission.starter;
           save.updateMission(mission.id, { text: undefined });
           sim = makeSim();
+          pane.reset?.(playerText);
           pane.attach(sim);
-          if (mission.engine === 'relay') sim.setRelay(playerText);
         },
       },
     ]);

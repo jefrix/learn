@@ -300,6 +300,17 @@ export class MachineView {
         }
         break;
       }
+      case 'display': {
+        g.appendChild(s('rect', { x: -44, y: -16, width: 88, height: 32, class: 'display-box', rx: 3 }));
+        const v = s('text', { x: 0, y: 6, class: 'display-val' }, '');
+        g.appendChild(v);
+        lbl(p.label, 0, 30, 'part-label center');
+        if (p.tag) tag(p.tag as string, 0, -22);
+        const unit = (p.unit as string) ?? '';
+        const dec = (p.decimals as number) ?? 0;
+        this.ups.push((sim) => (v.textContent = `${sim.sig.n(p.signal as string).toFixed(dec)}${unit ? ' ' + unit : ''}`));
+        break;
+      }
       case 'overload': {
         g.appendChild(s('rect', { x: -26, y: -20, width: 52, height: 40, class: 'ol-body', rx: 3 }));
         tag(p.label ? (p.id as string) : p.id, 0, -26);

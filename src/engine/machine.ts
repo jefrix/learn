@@ -10,6 +10,8 @@ export interface PlcPoint {
   /** Inputs wired through a field device's contact. */
   device?: string;
   contact?: 'NO' | 'NC';
+  /** Selector inputs: on while the selector is at this position. */
+  pos?: string;
   /** Inputs read straight from a signal (analog values, relay-panel terminals); outputs write this signal. */
   signal?: string;
   /** Terminal, e.g. "I-00" or "O-03". */

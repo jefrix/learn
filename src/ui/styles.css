@@ -287,3 +287,38 @@ textarea { width: 100%; }
   .head-actions .btn { padding: 6px 8px; }
 }
 .breakables { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; display: grid; gap: 6px; }
+
+/* ladder */
+.box { fill: var(--sheet); stroke: var(--fg); stroke-width: 1.6; }
+.ins.on .box { stroke: var(--on); stroke-width: 2.6; }
+.box-op { font: 700 13px var(--mono); fill: var(--fg); }
+.box-title { font: 500 11px var(--body); fill: var(--mute); }
+.box-label { font: 500 11px var(--body); fill: var(--mute); }
+.box-arg { font: 600 12px var(--mono); fill: var(--fg); }
+.box-val { font: 600 11px var(--mono); fill: var(--on); text-anchor: end; }
+.box-flag { font: 600 10px var(--mono); fill: var(--mute); }
+.box-flag-v { font: 700 11px var(--mono); fill: var(--on); }
+.bit-val { font: 700 11px var(--mono); fill: var(--mute); }
+.coil-arc { fill: none; }
+.contact.br { fill: none; }
+.ins.on .contact { stroke: var(--on); }
+.lad-ote .closed-fill, .lad-otl .closed-fill, .lad-otu .closed-fill, .lad-res .closed-fill { fill: transparent; }
+.ins.on.lad-ote .closed-fill, .ins.on.lad-otl .closed-fill, .ins.on.lad-otu .closed-fill, .ins.on.lad-res .closed-fill { fill: var(--on); }
+.ladder-pane { display: grid; gap: 8px; }
+.verify { display: grid; gap: 3px; }
+.warning { color: #b07800; font-weight: 600; font-size: 14px; }
+:root[data-theme="dark"] .warning { color: var(--tag); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .warning { color: var(--tag); } }
+.scan-view { display: grid; gap: 6px; }
+.scan-status { margin: 0; }
+.scan-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.scan-col { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; min-width: 0; overflow: hidden; }
+.scan-col.active { border-color: var(--tag); box-shadow: inset 0 0 0 2px var(--tag); }
+.scan-col table, .tag-table table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.scan-col td, .tag-table td, .tag-table th { padding: 2px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+td.on { color: var(--on); font-weight: 700; }
+.tag-table { overflow: auto; max-height: 40vh; display: grid; gap: 8px; }
+.hardwired summary { cursor: pointer; font: 700 15px var(--display); text-transform: uppercase; padding: 6px 0; }
+.display-box { fill: var(--plate); stroke: var(--steel); }
+.display-val { font: 700 16px var(--mono); fill: #ffb21e; text-anchor: middle; }
+@media (max-width: 640px) { .scan-cols { grid-template-columns: minmax(0, 1fr); } }
