@@ -137,6 +137,7 @@ export class ObjectiveWatcher {
   check(sim: Sim) {
     for (const o of this.objectives) {
       if (this.met.has(o.id)) continue;
+      if (o.after && !this.met.has(o.after)) continue;
       if (o.event) {
         if (sim.world.events.some((e) => e.kind === o.event) && allMatch(sim.sig, o.when)) this.met.add(o.id);
       } else if (allMatch(sim.sig, o.when)) this.met.add(o.id);

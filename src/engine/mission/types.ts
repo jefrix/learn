@@ -44,6 +44,8 @@ export interface Objective {
   when: Record<string, Expect>;
   /** Or: an event kind that must occur (overflow, undosed, trip, dryRun). */
   event?: string;
+  /** Only counts once this other objective is met. */
+  after?: string;
 }
 
 export interface HiddenFault {
@@ -94,6 +96,8 @@ export interface Mission {
   /** How this mission differs from real hardware and our real press. */
   realWorld: string;
   hints: string[];
+  /** Faults the player may cause on purpose from the work order panel. */
+  breakables?: { label: string; fault: Fault }[];
   /** Keyboard-free tip shown under the editor. */
   tip?: string;
 }

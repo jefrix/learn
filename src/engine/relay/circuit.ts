@@ -39,6 +39,8 @@ export interface Netlist {
   elements: NetElement[];
   sources: string[];
   problems: { rung: number; message: string }[];
+  /** Input and output node of every element and branch, by id (r<rung>.<path>), for drawing power flow. */
+  ends: Map<string, { a: string; b: string | null }>;
 }
 
 export type RelayFault =
@@ -56,6 +58,7 @@ export type RelayFault =
 export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
   const elements: NetElement[] = [];
   const problems: Netlist['problems'] = [];
+  const ends: Netlist['ends'] = new Map();
   let auto = 0;
   const fresh = () => `n${++auto}`;
 
@@ -71,6 +74,7 @@ export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
           return null;
         }
         if (isBranch(e)) {
+          const branchIn: string = node;
           const join = e.wire ?? fresh();
           let any = false;
           e.branch.forEach((leg, l) => {
@@ -81,6 +85,7 @@ export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
             }
           });
           node = any ? join : null;
+          ends.set(`r${ri}.${path.join('.')}`, { a: branchIn, b: node });
           continue;
         }
         const id = `r${ri}.${path.join('.')}`;
@@ -88,6 +93,7 @@ export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
           const el: NetElement = { id, rung: ri, path, op: e.op, device: e.args[0], a: node, b: 'N' };
           if (e.op === 'TMR') el.timer = timerSpec(e.args);
           elements.push(el);
+          ends.set(id, { a: node, b: null });
           node = null;
           continue;
         }
@@ -100,6 +106,7 @@ export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
         if (e.op !== 'WIRE') el.device = e.args[0];
         if (e.op === 'POS') el.pos = e.args[1] ?? 'on';
         elements.push(el);
+        ends.set(id, { a: node, b: out });
         node = out;
       }
       return node;
@@ -114,7 +121,7 @@ export function compile(rungs: Rung[], sources: string[] = ['L1']): Netlist {
       }
     }
   });
-  return { elements, sources, problems };
+  return { elements, sources, problems, ends };
 }
 
 interface TimerState {
@@ -143,6 +150,7 @@ export class RelayCircuit {
   closed = new Map<string, boolean>();
   /** Every device that appears as a load, so its signal is always written. */
   private loadDevices = new Set<string>();
+  private loadsOf = new Map<string, NetElement[]>();
 
   constructor(
     rungs: Rung[],
@@ -162,10 +170,15 @@ export class RelayCircuit {
 
   private index() {
     this.loadDevices.clear();
+    this.loadsOf.clear();
     const keepTimers = this.timers;
     this.timers = new Map();
     for (const e of this.net.elements) {
-      if (e.b === 'N' && e.device) this.loadDevices.add(e.device);
+      if (e.b === 'N' && e.device && !e.short) {
+        this.loadDevices.add(e.device);
+        if (!this.loadsOf.has(e.device)) this.loadsOf.set(e.device, []);
+        this.loadsOf.get(e.device)!.push(e);
+      }
       if (e.op === 'TMR' && e.device && e.timer) {
         const prev = keepTimers.get(e.device);
         this.timers.set(e.device, prev ? { ...prev, spec: e.timer } : { spec: e.timer, coil: false, acc: 0, out: false });
@@ -373,11 +386,8 @@ export class RelayCircuit {
         continue;
       }
       // Lamps, solenoids, horns, PLC inputs: on when their node is live.
-      let on = false;
-      for (const e of this.net.elements) {
-        if (e.device === dev && e.b === 'N' && !e.short && this.live.has(e.a) && !this.fault(dev, 'open')) on = true;
-      }
-      sig.set(dev, on);
+      const open = this.fault(dev, 'open');
+      sig.set(dev, !open && (this.loadsOf.get(dev) ?? []).some((e) => this.live.has(e.a)));
     }
     for (const [tag, st] of this.levelRelays) sig.set(tag, st);
   }

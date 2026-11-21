@@ -53,7 +53,8 @@ describe('process physics', () => {
     w.inject({ type: 'jam', part: 'P1' });
     step(w, s, 2.5);
     expect(s.get('FR1')).toBe(true);
-    expect(s.get('P1.running')).toBe(false);
+    // the trip only opens FR1's contacts; the pump keeps turning until the coil circuit drops KM1
+    expect(s.get('P1.running')).toBe(true);
     expect(w.action('FR1', 'reset')).toMatch(/still hot/);
     step(w, s, 3);
     expect(w.action('FR1', 'reset')).toBeNull();

@@ -9,6 +9,19 @@ interface Base {
   /** Screen position for the machine view; the engine ignores it. */
   at?: [number, number];
   label?: string;
+  // Drawing hints for the machine view; the engine ignores these.
+  size?: [number, number];
+  fluid?: string;
+  tag?: string;
+  color?: string;
+  cls?: string;
+  side?: 'left' | 'right';
+  points?: [number, number][];
+  flow?: string;
+  length?: number;
+  decimals?: number;
+  run?: string;
+  lamp?: string;
 }
 
 export interface TankDef extends Base {
@@ -240,8 +253,9 @@ export class World {
     }
   }
 
+  // A tripped overload does NOT stop the motor by itself: its NC contact has to
+  // be wired into the contactor coil circuit. That's the lesson of mission 1.6.
   private running(p: PumpDef | MotorDef | ScrewDef, sig: Signals): boolean {
-    if ('overload' in p && p.overload && this.tripTime.has(p.overload)) return false;
     if ('vfd' in p && p.vfd && this.hasFault('vfdFault', p.vfd)) return false;
     if (p.type === 'motor' && (p.fwd || p.rev)) return sig.b(p.fwd ?? '') !== sig.b(p.rev ?? '');
     return sig.b((p as PumpDef).drive ?? '');
@@ -273,7 +287,7 @@ export class World {
         else this.clearEvent('dryRun', p.id);
         add(p.from, -(gpm / 60) * dt);
         add(p.to, (gpm / 60) * dt);
-        this.overloadHeat(p, on, dt);
+        this.overloadHeat(p, on, dt, sig);
       } else if (p.type === 'valve') {
         const open = sig.b(p.drive) !== !!p.failOpen;
         const src = this.parts.get(p.from);
@@ -289,10 +303,11 @@ export class World {
         sig.set(`${p.id}.running`, on);
         if (p.fwd && p.rev) {
           sig.set(`${p.id}.dir`, on ? (sig.b(p.fwd) ? 1 : -1) : 0);
+          sig.set(`${p.id}.short`, sig.b(p.fwd) && sig.b(p.rev));
           if (sig.b(p.fwd) && sig.b(p.rev)) this.emit('phaseShort', p.id, `Forward and reverse closed together on ${p.label ?? p.id}: a phase-to-phase short.`);
           else this.clearEvent('phaseShort', p.id);
         }
-        this.overloadHeat(p, on, dt);
+        this.overloadHeat(p, on, dt, sig);
       } else if (p.type === 'screw') {
         const on = this.running(p, sig);
         const lvl = this.level.get(p.from) ?? 0;
@@ -337,10 +352,19 @@ export class World {
     for (const f of this.faults) if (f.type === 'trip' && !this.tripTime.has(f.part)) this.trip(f.part);
   }
 
-  private overloadHeat(p: PumpDef | MotorDef, on: boolean, dt: number) {
+  private overloadHeat(p: PumpDef | MotorDef, on: boolean, dt: number, sig: Signals) {
+    const jammed = !!this.hasFault('jam', p.id);
+    sig.set(`${p.id}.jammed`, jammed);
     if (!p.overload) return;
     const ol = this.parts.get(p.overload) as OverloadDef | undefined;
-    if (!ol || this.tripTime.has(ol.id)) return;
+    if (!ol) return;
+    if (this.tripTime.has(ol.id)) {
+      if (on && jammed && this.t - (this.tripTime.get(ol.id) ?? 0) > 10) {
+        this.emit('burn', p.id, `${p.label ?? p.id} is cooking: ${ol.id} tripped, but nothing opened the contactor. Its NC contact has to be in the coil circuit.`);
+      }
+      return;
+    }
+    this.clearEvent('burn', p.id);
     if (on && this.hasFault('jam', p.id)) {
       const t = (this.jamTime.get(p.id) ?? 0) + dt;
       this.jamTime.set(p.id, t);
