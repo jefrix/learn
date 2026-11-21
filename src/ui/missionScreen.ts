@@ -296,7 +296,28 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   const controls = h('div', { class: 'sim-controls' }, clockEl, pauseBtn, stepBtn, h('span', { class: 'seg-group', role: 'group', 'aria-label': 'Sim speed' }, speedBtns), powerBtn, mission.engine === 'relay' ? meterBtn : null, fuseBtn);
   const machineCard = h('section', { class: 'card machine-card', 'aria-label': 'Machine' }, controls, h('div', { class: 'machine-wrap' }, view.svg), status);
   const logicCard = h('section', { class: 'card logic-card', 'aria-label': 'Logic' }, h('div', { class: 'card-head' }, h('h2', {}, mission.engine === 'relay' ? 'Schematic' : 'Ladder'), mission.tip ? h('span', { class: 'small muted' }, mission.tip) : null), pane.root);
-  const side = h('div', { class: 'goal-card card' }, h('h2', {}, 'Work order'), goalBox, quizBox());
+  const breakBox = mission.breakables?.length
+    ? h(
+        'div',
+        { class: 'breakables' },
+        h('h4', {}, 'Break something'),
+        h(
+          'div',
+          { class: 'insp-row' },
+          mission.breakables.map((b) =>
+            h('button', {
+              class: 'btn small',
+              onclick: () => {
+                sim.inject(b.fault);
+                toast(`${b.label}.`);
+                checkObjectives();
+              },
+            }, b.label),
+          ),
+        ),
+      )
+    : null;
+  const side = h('div', { class: 'goal-card card' }, h('h2', {}, 'Work order'), goalBox, breakBox, quizBox());
   const root = h('div', { class: 'mission' }, head, h('div', { class: 'work' }, h('div', { class: 'col-left' }, machineCard, side), logicCard), help.root);
   host.appendChild(root);
   renderGoal();
