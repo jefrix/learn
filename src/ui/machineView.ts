@@ -18,6 +18,8 @@ const FLUID: Record<string, string> = { water: 'var(--water)', sludge: 'var(--sl
 export class MachineView {
   svg: SVGSVGElement;
   private ups: Updater[] = [];
+  /** Pushbuttons locked in with Shift+click or a long press. */
+  held = new Set<string>();
   /** Called when the player does something, with a short description. */
   onAction?: (what: string) => void;
   /** Set to make technician actions (clear jam, clean rods) check conditions first. */
@@ -362,23 +364,62 @@ export class MachineView {
         lbl(p.label, 0, 36, 'part-label center');
         g.setAttribute('role', 'button');
         g.setAttribute('tabindex', '0');
-        g.setAttribute('aria-label', `${p.tag ?? p.signal} ${p.label ?? ''}: hold to press`);
+        g.setAttribute('aria-label', `${p.tag ?? p.signal} ${p.label ?? ''}: hold to press. Shift+click or long-press to keep it held.`);
         g.style.cursor = 'pointer';
+        const sig = p.signal as string;
+        const name = (p.tag as string) ?? sig;
+        // A held button stays pressed after you let go, so you can press a second
+        // one with a mouse. Shift+click (or a long press on touch) holds it; a
+        // plain click releases it.
+        const heldMark = s('text', { x: 0, y: 49, class: 'held-mark' }, 'HELD');
+        g.appendChild(heldMark);
+        let longTimer = 0;
+        let keepDown = false;
+        const hold = () => {
+          this.held.add(sig);
+          this.getSim().press(sig);
+          toast(`${name} is held in. Click it again to let go.`);
+        };
         const down = (e: Event) => {
           e.preventDefault();
-          this.getSim().press(p.signal as string);
-          this.act(`press ${p.tag ?? p.signal}`);
+          if (this.held.has(sig)) {
+            this.held.delete(sig);
+            this.getSim().release(sig);
+            keepDown = true;
+            return;
+          }
+          this.getSim().press(sig);
+          this.act(`press ${name}`);
+          if ((e as PointerEvent).shiftKey || (e as KeyboardEvent).shiftKey) {
+            hold();
+            keepDown = true;
+            return;
+          }
+          keepDown = false;
+          clearTimeout(longTimer);
+          longTimer = window.setTimeout(() => {
+            hold();
+            keepDown = true;
+          }, 700);
         };
-        const up = () => this.getSim().release(p.signal as string);
+        const up = () => {
+          clearTimeout(longTimer);
+          if (keepDown || this.held.has(sig)) return;
+          this.getSim().release(sig);
+        };
         g.addEventListener('pointerdown', down);
         g.addEventListener('pointerup', up);
         g.addEventListener('pointerleave', up);
         g.addEventListener('pointercancel', up);
-        g.addEventListener('keydown', (e) => (e.key === ' ' || e.key === 'Enter') && down(e));
+        g.addEventListener('contextmenu', (e) => e.preventDefault());
+        g.addEventListener('keydown', (e) => !e.repeat && (e.key === ' ' || e.key === 'Enter') && down(e));
         g.addEventListener('keyup', (e) => (e.key === ' ' || e.key === 'Enter') && up());
         const lit = p.lamp as string | undefined;
         this.ups.push((sim) => {
-          g.classList.toggle('pressed', sim.sig.b(p.signal as string));
+          const on = sim.sig.b(sig);
+          if (this.held.has(sig) && !on) this.held.delete(sig); // e.g. after Start over
+          g.classList.toggle('pressed', on);
+          g.classList.toggle('held', this.held.has(sig));
           if (lit) g.classList.toggle('lit', sim.sig.b(lit));
         });
         break;

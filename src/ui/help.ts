@@ -23,7 +23,7 @@ function esc(t: string) {
   return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function inline(t: string): string {
+export function inline(t: string): string {
   return esc(t)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')

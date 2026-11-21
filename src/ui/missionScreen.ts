@@ -2,7 +2,7 @@
 
 import { clear, clock, h, modal, toast } from './dom';
 import { MachineView } from './machineView';
-import { HelpPanel, renderMd } from './help';
+import { HelpPanel, renderMd, inline } from './help';
 import { RungEditor } from './editor';
 import { relayKit } from './relayKit';
 import * as save from './save';
@@ -180,7 +180,7 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   const goalBox = h('div', { class: 'goal' });
   function renderGoal() {
     clear(goalBox);
-    goalBox.appendChild(h('ul', { class: 'goal-list' }, mission.goal.map((g) => h('li', {}, g))));
+    goalBox.appendChild(h('ul', { class: 'goal-list' }, mission.goal.map((g) => mdLi(g))));
     if (watcher) {
       goalBox.appendChild(
         h(
@@ -299,7 +299,7 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   );
 
   const controls = h('div', { class: 'sim-controls' }, clockEl, pauseBtn, stepBtn, h('span', { class: 'seg-group', role: 'group', 'aria-label': 'Sim speed' }, speedBtns), powerBtn, mission.engine === 'relay' ? meterBtn : null, fuseBtn);
-  const machineCard = h('section', { class: 'card machine-card', 'aria-label': 'Machine' }, controls, h('div', { class: 'machine-wrap' }, view.svg), status);
+  const machineCard = h('section', { class: 'card machine-card', 'aria-label': 'Machine' }, controls, h('div', { class: 'machine-wrap' }, view.svg), status, machine.parts.some((p) => p.type === 'button') ? h('p', { class: 'small muted hold-tip' }, 'To press two buttons at once: Shift+click (or long-press) one to hold it in, then press the other. Click a held button to let go.') : null);
   const logicCard = h('section', { class: 'card logic-card', 'aria-label': 'Logic' }, h('div', { class: 'card-head' }, h('h2', {}, mission.engine === 'relay' ? 'Schematic' : 'Ladder'), mission.tip ? h('span', { class: 'small muted' }, mission.tip) : null), pane.root);
   const breakBox = mission.breakables?.length
     ? h(
@@ -328,7 +328,7 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   renderGoal();
 
   function showBrief() {
-    modal(`${mission.id} ${mission.title}`, h('div', {}, renderMd(mission.brief), h('h4', {}, 'Your job'), h('ul', {}, mission.goal.map((g) => h('li', {}, g)))), [{ label: 'Start', primary: true }]);
+    modal(`${mission.id} ${mission.title}`, h('div', {}, renderMd(mission.brief), h('h4', {}, 'Your job'), h('ul', {}, mission.goal.map((g) => mdLi(g)))), [{ label: 'Start', primary: true }]);
   }
   let hintN = ms.hintsUsed ?? 0;
   function showHints() {
@@ -421,4 +421,11 @@ function collectInstr(rungs: Rung[]): { op: string; args: string[] }[] {
     });
   rungs.forEach((r) => walk(r.els));
   return out;
+}
+
+/** A list item with **bold** and `code` rendered. */
+function mdLi(text: string) {
+  const li = h('li', {});
+  li.innerHTML = inline(text);
+  return li;
 }

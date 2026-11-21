@@ -322,3 +322,7 @@ td.on { color: var(--on); font-weight: 700; }
 .display-box { fill: var(--plate); stroke: var(--steel); }
 .display-val { font: 700 16px var(--mono); fill: #ffb21e; text-anchor: middle; }
 @media (max-width: 640px) { .scan-cols { grid-template-columns: minmax(0, 1fr); } }
+.held-mark { font: 700 10px var(--mono); fill: var(--tagfg); text-anchor: middle; display: none; }
+.held .held-mark { display: block; paint-order: stroke; stroke: var(--tag); stroke-width: 9px; stroke-linejoin: round; }
+.held .pb-ring { stroke: var(--tag); stroke-width: 3; }
+.hold-tip { margin: 6px 0 0; }
