@@ -210,7 +210,7 @@ const secondStation: Mission = {
   reference: 'NC(SB1)NC(SB3)[NO(SB2),NO(SB4),NO(KM1)]COIL(KM1);\nNO(KM1)LAMP(H1);',
   help: ['series-parallel', 'seal-in', 'fail-safe'],
   realWorld: 'Remote stations on trucks use oil-resistant, weatherproof operators (NEMA 4X or IP66). Long runs to a remote station pick up voltage drop and noise, which is one reason many trucks use 24 VDC controls with an interposing relay.',
-  hints: ['Put `NC(SB3)` right after `NC(SB1)`.', 'Select the branch handle (small square) and choose **Add leg**, then add `NO(SB4)` on it.'],
+  hints: ['Work on the top rung (rung **0**, the one with the KM1 coil); don\'t add a new rung. Tap the **0** at its left end so the yellow **+** circles appear, then tap the **+** just after `NC(SB1)` and add `NC(SB3)`. Stops go in series.', 'Starts go in parallel. Tap `NO(SB2)` or `NO(KM1)` (they share a branch) and choose **Add leg to its branch**, or tap the small square at the left edge of that branch and choose **Add leg**. Then tap the **+** on the new empty leg and add `NO(SB4)`.'],
 };
 
 const deadTailgate: Mission = {

@@ -250,7 +250,7 @@ XIC(Pump_Cmd)OTE(Run_Lamp);`,
   help: ['otl-otu', 'prescan-first-scan', 'seal-in', 'auto-restarts'],
   realWorld:
     "In **Logix** controllers, every tag keeps its value through a power cycle; the prescan then clears OTE outputs and resets TON timers. In **Micro800** (CCW), variables are **not retained** unless you tick Retain, and the first-scan bit is `_SYSVA_FIRST_SCAN`. Either way, write the program so a machine can't restart itself after a power loss.",
-  hints: ['Add `XIC(S:FS)` as another leg on the OTU rung.', 'Add `XIO(EStop_OK)` as a third leg, and `XIC(EStop_OK)` to the OTL rung.'],
+  hints: ['On the OTU rung, tap `XIO(Stop_PB)` and choose **Branch around it**, then tap the **+** on the new empty leg and add `XIC(S:FS)`.', 'For a third leg, tap either contact on that branch and choose **Add leg to its branch**, then add `XIO(EStop_OK)` on it. Also add `XIC(EStop_OK)` to the OTL rung.'],
 };
 
 const onePush: Mission = {

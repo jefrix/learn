@@ -271,8 +271,9 @@ export class RungEditor {
         g.appendChild(inner);
         railEnds.push(...legEnds);
         gap(gapX, cy, path);
-        // a selectable handle for the branch itself
-        if (editable && this.isSelRung(ri)) {
+        // a selectable handle for the branch itself, shown on every editable rung
+        // so it can be found before the rung is selected
+        if (editable) {
           const hnd = s('rect', { x: x - 6, y: cy - 6, width: 12, height: 12, class: 'branch-handle' + (this.isSel(ri, path) ? ' sel' : ''), rx: 2 });
           hnd.addEventListener('click', (ev) => {
             ev.stopPropagation();
@@ -542,6 +543,11 @@ export class RungEditor {
     }
     if (!locked) {
       acts.appendChild(h('button', { class: 'btn small', onclick: () => this.wrap() }, 'Branch around it'));
+      // inside a branch, the element's path is [...branchPath, leg, index]
+      const branchPath = sel.path.slice(0, -2);
+      if (sel.path.length >= 3 && isBranch(getAt(this.rungs[sel.ri], branchPath))) {
+        acts.appendChild(h('button', { class: 'btn small', onclick: () => this.editRung(sel.ri, (r) => addLeg(r, branchPath)) }, 'Add leg to its branch'));
+      }
       acts.appendChild(h('button', { class: 'btn small', onclick: () => this.nudge(-1) }, '◀ Move'));
       acts.appendChild(h('button', { class: 'btn small', onclick: () => this.nudge(1) }, 'Move ▶'));
       acts.appendChild(h('button', { class: 'btn small danger', onclick: () => this.remove() }, 'Delete'));
