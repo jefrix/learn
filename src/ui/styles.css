@@ -326,3 +326,34 @@ td.on { color: var(--on); font-weight: 700; }
 .held .held-mark { display: block; paint-order: stroke; stroke: var(--tag); stroke-width: 9px; stroke-linejoin: round; }
 .held .pb-ring { stroke: var(--tag); stroke-width: 3; }
 .hold-tip { margin: 6px 0 0; }
+
+/* guide pages: Tutorial and Rules of thumb */
+.guide { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; }
+.guide h1 { font: 700 40px/1 var(--display); text-transform: uppercase; margin: 8px 0 0; }
+.guide .lede .md p { font-size: 18px; max-width: 70ch; }
+.guide-nav h2 { margin: 0 0 4px; font: 600 13px var(--body); text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.guide-toc { margin: 0; padding-left: 22px; columns: 2 300px; column-gap: 28px; }
+.guide-toc > li { break-inside: avoid; margin-bottom: 4px; font-weight: 600; }
+.guide-toc ol { list-style: none; padding-left: 0; font-weight: 400; font-size: 14px; }
+.guide-toc a { color: inherit; }
+.guide-section { border-top: 2px solid var(--fg); padding-top: 6px; }
+.guide-section > h2 { font: 700 28px/1.1 var(--display); text-transform: uppercase; margin: 6px 0; }
+.guide-section h2:focus, .guide-rule h3:focus { outline: none; }
+.guide-rule { margin: 14px 0 6px; padding-left: 12px; border-left: 4px solid var(--tag); }
+.guide-rule h3 { font: 700 21px/1.15 var(--display); margin: 0 0 2px; }
+.guide .md ol { padding-left: 22px; margin: 4px 0 10px; }
+.guide .md p, .guide .md li { max-width: 75ch; }
+.guide-shot { margin: 8px 0; }
+.guide-shot img { border: 1px solid var(--line); border-radius: 6px; display: block; }
+.guide-foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 12px 0 40px; }
+.demo { margin: 10px 0; display: grid; gap: 8px; }
+.demo-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); gap: 12px; align-items: start; }
+.demo-logic .ladder-scroll { max-height: 340px; }
+.demo-controls .btn.active { border-color: var(--warn); color: var(--warn); }
+.demo figcaption { max-width: 80ch; }
+@media (max-width: 900px) { .demo-grid { grid-template-columns: minmax(0, 1fr); } }
+.start-here .guide-card { min-height: 0; }
+.guide-note { border-left: 4px solid var(--tag); padding-left: 10px; margin-bottom: 8px; }
+.demo:not(.editable) .editor-tools { display: none; }
+.narrow-only { display: none; }
+@media (max-width: 560px) { .wide-only { display: none; } .narrow-only { display: inline; } }

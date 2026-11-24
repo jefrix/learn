@@ -27,7 +27,9 @@ export function inline(t: string): string {
   return esc(t)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[\[([a-z0-9-]+)\]\]/g, (_, id) => `<a href="#" data-card="${id}">${esc(cards[id]?.title ?? id)}</a>`);
+    .replace(/\[\[([a-z0-9-]+)\]\]/g, (_, id) => `<a href="#" data-card="${id}">${esc(cards[id]?.title ?? id)}</a>`)
+    // [text](#/route): links to other pages of the game only
+    .replace(/\[([^\]]+)\]\((#\/[A-Za-z0-9./_-]*)\)/g, '<a href="$2">$1</a>');
 }
 
 export function renderMd(md: string): HTMLElement {
@@ -60,15 +62,17 @@ export function renderMd(md: string): HTMLElement {
       out.appendChild(section);
       continue;
     }
-    const li = /^\s*[-*]\s+(.+)$/.exec(line);
+    const li = /^\s*(?:[-*]|(\d+)\.)\s+(.+)$/.exec(line);
     if (li) {
       if (para.length) flush();
+      const tagName: 'ol' | 'ul' = li[1] ? 'ol' : 'ul';
+      if (list && list.tagName.toLowerCase() !== tagName) list = null;
       if (!list) {
-        list = h('ul', {});
+        list = h(tagName, {});
         section.appendChild(list);
       }
       const item = h('li', {});
-      item.innerHTML = inline(li[1]);
+      item.innerHTML = inline(li[2]);
       list.appendChild(item);
       continue;
     }

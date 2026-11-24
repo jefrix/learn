@@ -52,6 +52,7 @@ export function modal(title: string, body: Node, actions: { label: string; prima
   const close = () => {
     overlay.remove();
     document.removeEventListener('keydown', onKey);
+    window.removeEventListener('hashchange', close);
   };
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') close();
@@ -75,6 +76,8 @@ export function modal(title: string, body: Node, actions: { label: string; prima
   );
   document.body.appendChild(overlay);
   document.addEventListener('keydown', onKey);
+  // following a link inside a dialog (e.g. to a guide page) closes it
+  window.addEventListener('hashchange', close);
   (overlay.querySelector('.modal-actions button') as HTMLElement | null)?.focus();
   return close;
 }

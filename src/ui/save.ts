@@ -17,7 +17,7 @@ export interface SaveFile {
   game: 'control-room';
   version: 1;
   missions: Record<string, MissionSave>;
-  settings: { speed?: number; unlockAll?: boolean };
+  settings: { speed?: number; unlockAll?: boolean; seenGuides?: string[] };
 }
 
 const KEY = 'controlroom.save.v1';

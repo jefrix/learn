@@ -5,6 +5,7 @@ import { chapters, missionById, missions } from '../data';
 import { missionScreen } from './missionScreen';
 import * as save from './save';
 import { HelpPanel, cards } from './help';
+import { guidePage } from './guide';
 import logoUrl from '../../assets/ameripro_logo.jpg';
 
 export function startApp(root: HTMLElement) {
@@ -17,19 +18,40 @@ export function startApp(root: HTMLElement) {
       'nav',
       { class: 'top-nav' },
       h('a', { href: '#/', class: 'btn small ghost' }, 'Missions'),
-      h('a', { href: '#/help', class: 'btn small ghost' }, 'Help cards'),
+      h('a', { href: '#/tutorial', class: 'btn small ghost' }, 'Tutorial'),
+      h('a', { href: '#/basics', class: 'btn small ghost', 'aria-label': 'Rules of thumb' }, h('span', { class: 'wide-only' }, 'Rules of thumb'), h('span', { class: 'narrow-only' }, 'Rules')),
+      h('a', { href: '#/help', class: 'btn small ghost', 'aria-label': 'Help cards' }, h('span', { class: 'wide-only' }, 'Help cards'), h('span', { class: 'narrow-only' }, 'Help')),
       h('button', { class: 'btn small ghost', onclick: () => saveMenu() }, 'Save'),
     ),
   );
   root.append(header, main);
   let teardown: (() => void) | null = null;
+  let onGuide = '';
 
   const route = () => {
+    const hash = location.hash || '#/';
+    const g = /^#\/(tutorial|basics)(?:\/([a-z0-9-]+))?$/.exec(hash);
+    // a link within the same guide page just scrolls, so its live demos keep running
+    if (g && g[1] === onGuide && g[2]) {
+      const el = document.getElementById(`g-${g[2]}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        el.focus({ preventScroll: true });
+        return;
+      }
+    }
     teardown?.();
     teardown = null;
+    onGuide = '';
     clear(main);
     window.scrollTo(0, 0);
-    const hash = location.hash || '#/';
+    if (g) {
+      const id = g[1] as 'tutorial' | 'basics';
+      document.title = `${id === 'tutorial' ? 'Tutorial' : 'Rules of thumb'} · Control Room`;
+      teardown = guidePage(id, main, g[2]);
+      onGuide = id;
+      return;
+    }
     const m = /^#\/m\/(.+)$/.exec(hash);
     if (m) {
       const mission = missionById(decodeURIComponent(m[1]));
@@ -78,6 +100,23 @@ function home(main: HTMLElement) {
         "You're AmeriPro's new controls technician. Each work order is one of our machines: a truck's transfer pump, a lift station, the hood-wash rig, the PJDL-302 screw press, and a water treatment trailer. Wire it, run it, break it, fix it.",
       ),
       h('p', { class: 'small muted' }, `${done} of ${missions.length} missions commissioned.`),
+    ),
+  );
+  const seen = new Set(s.settings.seenGuides ?? []);
+  const startCard = (href: string, id: string, title: string, blurb: string) =>
+    h('li', {}, h('a', { href, class: `mission-card guide-card ${seen.has(id) ? 'done' : ''}` }, h('span', { class: 'mission-id' }, id === 'tutorial' ? 'Guide 1' : 'Guide 2'), h('strong', {}, title), h('span', { class: 'site small' }, blurb), h('span', { class: 'status small' }, seen.has(id) ? '✓ Read' : '')));
+  main.appendChild(
+    h(
+      'section',
+      { class: 'chapter start-here' },
+      h('h2', {}, 'Start here'),
+      h('p', { class: 'muted' }, done === 0 ? 'New to the game? Spend ten minutes on these two before the first work order.' : 'The how-to and the wiring rules, any time you need them.'),
+      h(
+        'ol',
+        { class: 'mission-grid' },
+        startCard('#/tutorial', 'tutorial', 'How to use Control Room', 'Running machines, building rungs, branches, commissioning'),
+        startCard('#/basics', 'basics', 'Rules of thumb', 'Stops in series, starts in parallel, and 22 more, with live examples'),
+      ),
     ),
   );
   for (const ch of chapters) {

@@ -26,6 +26,7 @@ Missions, machines and help cards are data:
 - `src/data/missions/ch1/*.ts`, `ch2/*.ts`: one or more missions per file (default export). Each has a brief, a starter, test scenarios with plain-language failure sentences, and a reference solution.
 - `src/data/machines/*.ts`: the plant parts and their screen positions, relay devices, hardwired circuits and PLC I/O.
 - `src/data/help/*.md`: help cards. Link between them with `[[card-id]]`; every card needs a `## Real world` (or `## Safety`) section.
+- `src/data/guides/tutorial.md` and `basics.md`: the Tutorial and Rules of thumb pages. `## Part {#anchor}` and `### Rule {#anchor}` make sections (linkable as `#/basics/anchor`), `{{demo:key}}` places a live example defined in `src/data/guides/index.ts`, and `{{img:key}}` places a picture from `assets/tutorial/`. The practice boards the examples run on are in `src/data/machines/briefing.ts`.
 
 `npm test` fails if a new mission's reference solution doesn't pass its own tests.
 

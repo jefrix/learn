@@ -328,7 +328,18 @@ export function missionScreen(mission: Mission, host: HTMLElement, go: (hash: st
   renderGoal();
 
   function showBrief() {
-    modal(`${mission.id} ${mission.title}`, h('div', {}, renderMd(mission.brief), h('h4', {}, 'Your job'), h('ul', {}, mission.goal.map((g) => mdLi(g)))), [{ label: 'Start', primary: true }]);
+    // the first mission of a chapter points new players at the guides
+    const first = missions.find((m) => m.chapter === mission.chapter)?.id === mission.id;
+    const seen = save.load().settings.seenGuides ?? [];
+    const unread = first && !(seen.includes('tutorial') && seen.includes('basics'));
+    const plc = mission.engine !== 'relay';
+    const note = unread
+      ? renderMd(plc
+        ? 'New to PLC ladder? Read [Chapter 2: the PLC screen](#/tutorial/plc) and [the PLC rules of thumb](#/basics/plc) first.'
+        : 'First time here? The [tutorial](#/tutorial) shows how the screen works, and the [rules of thumb](#/basics) cover the wiring basics you need for these missions.')
+      : null;
+    note?.classList.add('guide-note');
+    modal(`${mission.id} ${mission.title}`, h('div', {}, note, renderMd(mission.brief), h('h4', {}, 'Your job'), h('ul', {}, mission.goal.map((g) => mdLi(g)))), [{ label: 'Start', primary: true }]);
   }
   let hintN = ms.hintsUsed ?? 0;
   function showHints() {
