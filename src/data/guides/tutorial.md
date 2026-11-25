@@ -1,12 +1,12 @@
 # How to use Control Room
-A ten-minute walk through the game, from the mission map to commissioning. There's a practice board near the end where you can try the editor without a work order. Then read [Rules of thumb](#/basics) before your first mission.
+A ten-minute walk through the trainer, from the mission map to commissioning. There's a practice board near the end where you can try the editor without a work order. Then read [Rules of thumb](#/basics) before your first mission.
 
 ## What you're doing {#overview}
 You're AmeriPro's new controls technician. Each **work order** is one of our machines: a truck's transfer pump, a lift station, the hood-wash rig, the screw press, a water treatment trailer. For each one you:
 1. Read the brief and the work order.
 2. Build or fix the control logic in the drawing.
 3. Run the machine live: press its buttons, fill its tanks, break things.
-4. Press **Commission**. The game runs its own tests on your logic and tells you, in plain English, what passed and what didn't.
+4. Press **Commission**. The trainer runs its own tests on your logic and tells you, in plain English, what passed and what didn't.
 
 There are three kinds of work order:
 - **Build:** wire something new from the work order.
@@ -99,7 +99,7 @@ If you wire a rung with no load, L1 shorts straight to N and the **control fuse 
 - [Rules of thumb](#/basics) has the wiring rules with live examples.
 
 ## Commissioning {#commission}
-Press **Commission** when you think it works. The game runs the mission's test scenarios at high speed: pressing buttons, filling tanks and breaking wires in a set order, and checking the outputs at each step.
+Press **Commission** when you think it works. The trainer runs the mission's test scenarios at high speed: pressing buttons, filling tanks and breaking wires in a set order, and checking the outputs at each step.
 - **✓** means a scenario passed. **✗** explains what went wrong, like "When the polymer tank went low, the sludge pump kept running", with the values it saw.
 - Any solution that passes is fine. There's no single right drawing.
 - Some missions also need the **Work order checklist** done in the live machine, a **question** answered, or a hidden fault found with **Inspect and repair** (select a device in the drawing to see that button).
