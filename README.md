@@ -1,6 +1,6 @@
 # learn
 
-AmeriPro's learning projects. The first is **Control Room**, a browser game that teaches relay logic, then Allen-Bradley-style PLC ladder programming, using our own equipment as the missions. It's published at **https://jefrix.github.io/learn/**.
+AmeriPro's learning projects. The first is **Control Room**, a browser trainer that teaches relay logic, then Allen-Bradley-style PLC ladder programming, using our own equipment as the missions. It's published at **https://jefrix.github.io/learn/**.
 
 ## Play it locally
 You need Node.js 20 or newer.
@@ -38,9 +38,9 @@ Missions, machines and help cards are data:
 | `src/data/` | Missions, machines, help cards. |
 | `tests/` | Vitest tests. |
 | `docs/DESIGN.md` | The approved design. |
-| `docs/SIMPLIFICATIONS.md` | Everywhere the game simplifies real hardware or our press. |
+| `docs/SIMPLIFICATIONS.md` | Everywhere the trainer simplifies real hardware or our press. |
 | `docs/CHAPTER3_PLAN.md` | Plan for the software chapters. |
-| `reference/` | Source material: press drawings and photos, operator guide, MWTP documents. Not part of the game. |
+| `reference/` | Source material: press drawings and photos, operator guide, MWTP documents. Not part of the trainer. |
 | `assets/` | AmeriPro logo. |
 | `PROMPT.md` | The original brief. |
 
